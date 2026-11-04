@@ -8,6 +8,7 @@ LINES_CTX="${TBTW_LINES:-150}"
 
 if [ "${1:-}" != "--ask" ]; then
   tail -n "$LINES_CTX" >"$SNAP"
+  hyprctl activewindow -j | sed -n 's/.*"address": "\(.*\)".*/\1/p' >"$SNAP.win"  # ventana a la que volver
   # ponytail: un popup a la vez; el nuevo reemplaza al anterior
   pkill -f 'app-id=tbtw' 2>/dev/null
   setsid -f foot --app-id=tbtw "$0" --ask >/dev/null 2>&1
@@ -25,4 +26,4 @@ cmd=$({ echo '<terminal>'; cat "$SNAP"; echo '</terminal>'; echo "Quiero: $q"; }
 [ -n "$cmd" ] || { echo " sin respuesta"; read -r -n1; exit 1; }
 wl-copy -- "$cmd"
 # se escribe en la ventana que recupera el foco al cerrar el popup; sin Enter
-setsid -f sh -c 'sleep 0.3; wtype -- "$1"' _ "$cmd" >/dev/null 2>&1
+setsid -f sh -c 'sleep 0.2; hyprctl dispatch focuswindow "address:$(cat "$2.win")"; sleep 0.2; wtype -- "$1"' _ "$cmd" "$SNAP" >"$SNAP.log" 2>&1
