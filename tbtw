@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# tbtw — pregúntale a Claude Haiku sobre lo que hay en tu terminal (estilo /btw).
+# foot lo llama con la pantalla por stdin; abre un popup flotante para preguntar.
+set -u
+SNAP="${XDG_RUNTIME_DIR:-/tmp}/tbtw.txt"
+MODEL="${TBTW_MODEL:-haiku}"
+LINES_CTX="${TBTW_LINES:-150}"
+
+if [ "${1:-}" != "--ask" ]; then
+  tail -n "$LINES_CTX" >"$SNAP"
+  # ponytail: un popup a la vez; el nuevo reemplaza al anterior
+  pkill -f 'app-id=tbtw' 2>/dev/null
+  setsid -f foot --app-id=tbtw "$0" --ask >/dev/null 2>&1
+  exit 0
+fi
+
+SYS='Eres un ayudante rápido de terminal. Recibes el contenido reciente de la terminal del usuario y una pregunta. Responde en el idioma de la pregunta, muy breve y directo, con el comando o código exacto si aplica. Sin saludos ni relleno. Usa texto plano (sin markdown de títulos).'
+cd "${XDG_RUNTIME_DIR:-/tmp}" || exit 1   # fuera de proyectos: sin CLAUDE.md que gaste tokens
+while read -r -e -p $'\e[1;35m? \e[0m' q && [ -n "$q" ]; do
+  { echo '<terminal>'; cat "$SNAP"; echo '</terminal>'; echo "Pregunta: $q"; } |
+    claude -p --model "$MODEL" --tools "" --no-session-persistence \
+      --setting-sources "" --system-prompt "$SYS"
+  echo
+done
