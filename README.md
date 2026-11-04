@@ -2,11 +2,11 @@
 
 Pregúntale a Claude Haiku sobre lo que ves en tu terminal, estilo `/btw`. Pensado para Omarchy + [foot](https://codeberg.org/dnkl/foot).
 
-`Ctrl+Shift+A` → popup flotante con el contexto de tu terminal ya cargado → escribes la duda → respuesta en ~2 s. Enter vacío cierra la sesión.
+`Ctrl+Shift+A` → popup flotante → describes lo que quieres → el popup se cierra y el comando queda escrito en tu terminal (sin Enter; también en el portapapeles).
 
 ```
 ? como veo el rango de calidades de df?
-Usa df["quality"].agg(["min", "max"])
+→ (escrito en tu prompt) df["quality"].agg(["min", "max"])
 ```
 
 ## Cómo funciona
@@ -17,7 +17,7 @@ Usa df["quality"].agg(["min", "max"])
 
 ## Instalar
 
-Requiere `claude` (logueado) y `foot`.
+Requiere `claude` (logueado), `foot`, `wtype` y `wl-clipboard`.
 
 ```bash
 git clone https://github.com/adalbertdb/terminal-helper ~/proyectos/terminal-helper
@@ -47,5 +47,4 @@ Con config clásica: `windowrule = float on, match:class ^tbtw$` y `windowrule =
 ## Límites
 
 - Solo foot. Otras terminales: kitty (`kitten @ get-text`), tmux (`capture-pane -p`) o ghostty necesitarían otro punto de entrada; el modo `--ask` es independiente de la terminal.
-- Cada pregunta es independiente (no recuerda las anteriores).
 - Una ventana `tbtw` a la vez.
