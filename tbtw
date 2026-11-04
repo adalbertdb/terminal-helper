@@ -26,5 +26,7 @@ cmd=$({ d=$(cat "$SNAP.cwd" 2>/dev/null); echo "<cwd>$d</cwd>"; echo '<files>'; 
   sed -e '/^```/d' -e 's/^[$>]\+ //' | head -n1)
 [ -n "$cmd" ] || { echo " sin respuesta"; read -r -n1; exit 1; }
 wl-copy -- "$cmd"
-# se escribe en la ventana que recupera el foco al cerrar el popup; sin Enter
-setsid -f sh -c 'sleep 0.2; hyprctl dispatch focuswindow "address:$(cat "$2.win")"; sleep 0.2; wtype -- "$1"' _ "$cmd" "$SNAP" >"$SNAP.log" 2>&1
+# espera a que muera este popup, devuelve el foco a la ventana original y escribe (sin Enter)
+setsid -f sh -c 'tail --pid="$3" -f /dev/null; sleep 0.15
+hyprctl dispatch "hl.dsp.focus({ window = \"address:$(cat "$2.win")\" })"; sleep 0.15
+wtype -- "$1"' _ "$cmd" "$SNAP" "$$" >"$SNAP.log" 2>&1
