@@ -8,6 +8,7 @@ LINES_CTX="${TBTW_LINES:-150}"
 
 if [ "${1:-}" != "--ask" ]; then
   tail -n "$LINES_CTX" >"$SNAP"
+  omarchy-cmd-terminal-cwd >"$SNAP.cwd" 2>/dev/null  # directorio de la terminal original
   hyprctl activewindow -j | sed -n 's/.*"address": "\(.*\)".*/\1/p' >"$SNAP.win"  # ventana a la que volver
   # ponytail: un popup a la vez; el nuevo reemplaza al anterior
   pkill -f 'app-id=tbtw' 2>/dev/null
@@ -15,11 +16,11 @@ if [ "${1:-}" != "--ask" ]; then
   exit 0
 fi
 
-SYS='You are a terminal assistant. You receive the recent contents of the user'\''s terminal (a shell or a REPL such as python) and what they want to do. Reply ONLY with the single most suitable command or line of code for that context, on one line, with no markdown, no code fences and no explanation. The request may be in any language.'
+SYS='You are a terminal assistant. You receive the cwd, its file listing and the recent contents of the user'\''s terminal (a shell or a REPL such as python), plus what they want to do. Reply ONLY with the command or line of code that does it, as a single line: no markdown, code fences or explanation. The command may be long, complex or chained (&&, ;, pipes, subshells); to run several steps in a shell, chain them on one line. To start a REPL with setup, use one line like: python3 -i -c "import pandas as pd; df = pd.read_csv('\''file.csv'\'')". Use real file names from the listing. If already inside a REPL, reply with a line for that REPL. The request may be in any language.'
 cd "${XDG_RUNTIME_DIR:-/tmp}" || exit 1   # fuera de proyectos: sin CLAUDE.md que gaste tokens
 read -r -e -p $'\e[1;35m? \e[0m' q && [ -n "$q" ] || exit 0
 echo -n "..."
-cmd=$({ echo '<terminal>'; cat "$SNAP"; echo '</terminal>'; echo "Quiero: $q"; } |
+cmd=$({ d=$(cat "$SNAP.cwd" 2>/dev/null); echo "<cwd>$d</cwd>"; echo '<files>'; ls -1 -- "$d" 2>/dev/null | head -50; echo '</files>'; echo '<terminal>'; cat "$SNAP"; echo '</terminal>'; echo "Quiero: $q"; } |
   claude -p --model "$MODEL" --tools "" --no-session-persistence \
     --setting-sources "" --system-prompt "$SYS" |
   sed -e '/^```/d' -e 's/^[$>]\+ //' | head -n1)

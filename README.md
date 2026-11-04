@@ -48,3 +48,5 @@ Con config clásica: `windowrule = float on, match:class ^tbtw$` y `windowrule =
 
 - Solo foot. Otras terminales: kitty (`kitten @ get-text`), tmux (`capture-pane -p`) o ghostty necesitarían otro punto de entrada; el modo `--ask` es independiente de la terminal.
 - Una ventana `tbtw` a la vez.
+- El comando siempre es una sola línea (si no, `wtype` pulsaría Enter); los pasos van encadenados con `&&`, `;` o pipes.
+- Al modelo le llegan también el directorio actual y su `ls`, para usar nombres de archivo reales.
